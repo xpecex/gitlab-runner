@@ -24,6 +24,8 @@ RUN cd /git-lfs && \
 
 FROM ubuntu:18.04
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN adduser --system --disabled-password --home /home/gitlab-runner gitlab-runner
 
 RUN apt update && apt install --no-install-recommends -yqq \
