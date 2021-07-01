@@ -29,7 +29,7 @@ COPY --from=build /go/bin/git-lfs /usr/bin/git-lfs
 COPY $TARGETPLATFORM/gitlab-runner /usr/bin/gitlab-runner
 COPY $TARGETPLATFORM/docker-machine /usr/bin/docker-machine
 COPY $TARGETPLATFORM/tini /usr/bin/tini
-COPY $TARGETPLATFORM/entrypoint /entrypoint
+COPY ./entrypoint /entrypoint
 
 RUN chmod +x /usr/bin/gitlab-runner && \
     chmod +x /usr/bin/git-lfs && \

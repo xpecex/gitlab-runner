@@ -66,7 +66,7 @@ for RELEASE in "${RELEASES[@]}"; do
     for ARCH in "${ARCHS[@]}"; do
 
         # PRINT DOWNLOAD INFO
-        echo "DOWNLOAD .DEB PACKAGE $RELEASE FOR $ARCH"
+        echo "DOWNLOAD PACKAGE $RELEASE FOR $ARCH"
 
         # CHECK ARCH
         case "$ARCH" in
