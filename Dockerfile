@@ -2,15 +2,17 @@ FROM ubuntu:18.04 AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update -yqq && \
-    apt install -yqq --no-install-recommends build-essential libc6-dev git
+RUN apt update && \
+    apt install -yqq --no-install-recommends build-essential libc6-dev unzip wget
 
 ARG DUMBINIT_VERSION
 
-WORKDIR /dumb-init
+WORKDIR /dumb-init-$DUMBINIT_VERSION
 
-RUN git clone --depth 1 --branch v${DUMBINIT_VERSION} https://github.com/Yelp/dumb-init.git /dumb-init && \
-    cd /dumb-init && \
+RUN echo "DUMB_INIT: $DUMBINIT_VERSION" && \
+    wget --no-check-certificate -q https://github.com/Yelp/dumb-init/archive/refs/tags/v$DUMBINIT_VERSION.zip -O /tmp/dumb-init.zip && \
+    unzip -o /tmp/dumb-init.zip -d / && \
+    cd /dumb-init-$DUMBINIT_VERSION/ && \
     make
 
 FROM ubuntu:18.04
@@ -31,11 +33,12 @@ RUN apt-get update -yqq && \
     && rm -rf /var/lib/apt/lists/*
 
 ARG TARGETPLATFORM
+ARG DUMBINIT_VERSION
 
 COPY $TARGETPLATFORM/git-lfs /usr/bin/git-lfs
 COPY $TARGETPLATFORM/gitlab-runner /usr/bin/gitlab-runner
 COPY $TARGETPLATFORM/docker-machine /usr/bin/docker-machine
-COPY --from=build /dumb-init/dumb-init /usr/bin/dumb-init
+COPY --from=build /dumb-init-$DUMBINIT_VERSION/dumb-init /usr/bin/dumb-init
 COPY ./entrypoint /entrypoint
 
 RUN chmod +x /usr/bin/gitlab-runner && \
