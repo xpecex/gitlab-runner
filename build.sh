@@ -14,9 +14,7 @@ IMAGE_ALT_REF="$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 7 | head -n 1)"
 
 # RELEASES LIST
 RELEASES=(
-    "0.47.3"
-    "0.48.0"
-    "0.49.0"
+    "14.0.1"
 )
 # LATEST RELEASE
 LATEST_RELEASE=$(curl -s "https://gitlab-runner-downloads.s3.amazonaws.com/latest/index.html" | grep Ref: | cut -d "v" -f 2 | cut -d "<" -f 1)
@@ -31,7 +29,6 @@ CGO_ENABLED=0
 # ARCHITECTURE LIST
 ARCHS=(
     "linux/amd64"
-    "linux/arm/v6"
     "linux/arm/v7"
     "linux/arm64"
 )
@@ -79,13 +76,6 @@ for RELEASE in "${RELEASES[@]}"; do
             TINI_ARCH="amd64"
             GOARCH=amd64
             GOARM_VERSION=""
-            ;;
-        linux/arm/v6)
-            RUNNER_ARCH="arm"
-            DOCKER_ARCH="armhf"
-            TINI_ARCH="armhf"
-            GOARCH=arm
-            GOARM_VERSION=6
             ;;
         linux/arm/v7)
             RUNNER_ARCH="arm"
