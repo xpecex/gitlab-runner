@@ -19,7 +19,7 @@ RELEASES=(
 # LATEST RELEASE
 LATEST_RELEASE=$(curl -s "https://gitlab-runner-downloads.s3.amazonaws.com/latest/index.html" | grep Ref: | cut -d "v" -f 2 | cut -d "<" -f 1)
 DOCKER_MACHINE_VERSION=0.16.2
-TINI_VERSION=0.19.0
+DUMBINIT_VERSION=1.2.5
 GIT_LFS_VERSION=2.13.3
 
 # GO ENV 
@@ -60,7 +60,7 @@ for RELEASE in "${RELEASES[@]}"; do
     # PRINT BUILD INFO
     echo " ========= BUILDING RELEASE: $RELEASE ========= "
 
-    wget -q -O entrypoint https://gitlab.com/gitlab-org/gitlab-runner/-/raw/v${RELEASE}/dockerfiles/alpine/entrypoint
+    wget -q -O entrypoint https://gitlab.com/gitlab-org/gitlab-runner/-/raw/v${RELEASE}/dockerfiles/runner/ubuntu/entrypoint
 
     # Download myst-node .DEB PACKAGE
     for ARCH in "${ARCHS[@]}"; do
@@ -73,23 +73,17 @@ for RELEASE in "${RELEASES[@]}"; do
         linux/amd64)
             RUNNER_ARCH="amd64"
             DOCKER_ARCH="x86_64"
-            TINI_ARCH="amd64"
-            GOARCH=amd64
-            GOARM_VERSION=""
+            GIT_LFS_ARCH="amd64"
             ;;
         linux/arm/v7)
             RUNNER_ARCH="arm"
             DOCKER_ARCH="armhf"
-            TINI_ARCH="armhf"
-            GOARCH=arm
-            GOARM_VERSION=7
+            GIT_LFS_ARCH="arm"
             ;;
         linux/arm64)
             RUNNER_ARCH="arm64"
             DOCKER_ARCH="aarch64"
-            TINI_ARCH="arm64"
-            GOARCH=arm64
-            GOARM_VERSION=""
+            GIT_LFS_ARCH="arm64"
             ;;
         esac
 
@@ -97,9 +91,14 @@ for RELEASE in "${RELEASES[@]}"; do
         mkdir -p "$ARCH"
         wget -q -O $ARCH/gitlab-runner -c https://gitlab-runner-downloads.s3.amazonaws.com/v${RELEASE}/binaries/gitlab-runner-linux-${RUNNER_ARCH}
         wget -q -O $ARCH/docker-machine -c https://github.com/docker/machine/releases/download/v${DOCKER_MACHINE_VERSION}/docker-machine-Linux-${DOCKER_ARCH}
-        wget -q -O $ARCH/tini -c https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini-static-${TINI_ARCH}
+        wget -q -O $ARCH/git-lfs.tar.gz -c https://github.com/git-lfs/git-lfs/releases/download/v${GIT_LFS_VERSION}/git-lfs-linux-${GIT_LFS_ARCH}-v${GIT_LFS_VERSION}.tar.gz
+
+        tar -xf $ARCH/git-lfs.tar.gz -C $ARCH/
+        rm -rf $ARCH/git-lfs.tar.gz
 
     done
+
+
 
     # PRINT BUILD INFO
     echo "STARTING THE BUILD"
@@ -110,11 +109,7 @@ for RELEASE in "${RELEASES[@]}"; do
         docker buildx build \
         --push \
         --progress auto \
-        --build-arg GIT_LFS_VERSION="$GIT_LFS_VERSION" \
-        --build-arg GOOS="$GOOS" \
-        --build-arg CGO_ENABLED="$CGO_ENABLED" \
-        --build-arg GOARCH="$GOARCH" \
-        --build-arg GOARM_VERSION="$GOARM_VERSION" \
+        --build-arg DUMBINIT_VERSION="$DUMBINIT_VERSION" \
         --cache-from "${IMAGE_NAME}:${IMAGE_VER:-$RELEASE}" \
         --platform "$(echo ${ARCHS[@]} | sed 's/ /,/g')" \
         -t "${IMAGE_NAME}:${IMAGE_VER:-$RELEASE}" \
@@ -124,11 +119,7 @@ for RELEASE in "${RELEASES[@]}"; do
         docker buildx build \
         --push \
         --progress auto \
-        --build-arg GIT_LFS_VERSION="$GIT_LFS_VERSION" \
-        --build-arg GOOS="$GOOS" \
-        --build-arg CGO_ENABLED="$CGO_ENABLED" \
-        --build-arg GOARCH="$GOARCH" \
-        --build-arg GOARM_VERSION="$GOARM_VERSION" \
+        --build-arg DUMBINIT_VERSION="$DUMBINIT_VERSION" \
         --cache-from "${IMAGE_NAME}:${IMAGE_VER:-$RELEASE}" \
         --platform "$(echo ${ARCHS[@]} | sed 's/ /,/g')" \
         -t "${IMAGE_NAME}:${IMAGE_VER:-$RELEASE}" \
