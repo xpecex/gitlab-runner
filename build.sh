@@ -109,6 +109,7 @@ for RELEASE in "${RELEASES[@]}"; do
     if [ "$RELEASE" = "$LATEST_RELEASE" ]; then
         docker buildx build \
         --push \
+        --progress auto \
         --build-arg GIT_LFS_VERSION="$GIT_LFS_VERSION" \
         --build-arg GOOS="$GOOS" \
         --build-arg CGO_ENABLED="$CGO_ENABLED" \
@@ -122,6 +123,7 @@ for RELEASE in "${RELEASES[@]}"; do
     else
         docker buildx build \
         --push \
+        --progress auto \
         --build-arg GIT_LFS_VERSION="$GIT_LFS_VERSION" \
         --build-arg GOOS="$GOOS" \
         --build-arg CGO_ENABLED="$CGO_ENABLED" \

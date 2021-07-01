@@ -1,15 +1,26 @@
 FROM golang:1.16.2-alpine3.12 as build
 
+RUN apk add --no-cache git
+
 ARG GIT_LFS_VERSION
 ARG GOARCH
 ARG GOOS
 ARG GOARM_VERSION
 ARG CGO_ENABLED
 
-RUN mkdir -p src/github.com/git-lfs/git-lfs && \
-    wget -nv -O /tmp/git-lfs.tar.gz https://github.com/git-lfs/git-lfs/archive/v${GIT_LFS_VERSION}.tar.gz && \
-    tar xf  /tmp/git-lfs.tar.gz  -C src/github.com/git-lfs/git-lfs --strip-components 1 && \
-    go build -a -ldflags '-extldflags "-static"' -o bin/git-lfs github.com/git-lfs/git-lfs/ 
+ENV GOARCH=$GOARCH
+ENV GOOS=$GOOS
+ENV GOARM_VERSION=$GOARM_VERSION
+ENV CGO_ENABLED=$CGO_ENABLED
+
+WORKDIR /git-lfs
+
+RUN git clone --depth 1 --branch v${GIT_LFS_VERSION} https://github.com/git-lfs/git-lfs.git /git-lfs
+
+RUN cd /git-lfs && \
+    go build -a -ldflags '-extldflags "-static"' -o bin/git-lfs ./git-lfs.go
+
+
 
 FROM ubuntu:18.04
 
@@ -25,7 +36,7 @@ RUN apt update && apt install --no-install-recommends -yqq \
 
 ARG TARGETPLATFORM
 
-COPY --from=build /go/bin/git-lfs /usr/bin/git-lfs
+COPY --from=build /git-lfs/bin/git-lfs /usr/bin/git-lfs
 COPY $TARGETPLATFORM/gitlab-runner /usr/bin/gitlab-runner
 COPY $TARGETPLATFORM/docker-machine /usr/bin/docker-machine
 COPY $TARGETPLATFORM/tini /usr/bin/tini
