@@ -1,13 +1,13 @@
 FROM alpine:3.12.7 AS build
 
-RUN apk add --no-cache ca-certificates build-base libc6-compat unzip wget
+RUN apk add --no-cache ca-certificates bash build-base libc6-compat unzip wget
 
 ARG DUMBINIT_VERSION
 
 WORKDIR /dumb-init-$DUMBINIT_VERSION
 
 RUN wget -q https://github.com/Yelp/dumb-init/archive/refs/tags/v$DUMBINIT_VERSION.zip -O /tmp/dumb-init.zip && \
-    unzip -o /tmp/dumb-init.zip -d / && \
+    unzip -qq -o /tmp/dumb-init.zip -d / && \
     cd /dumb-init-$DUMBINIT_VERSION/ && \
     make
 
@@ -17,12 +17,11 @@ FROM alpine:3.12.7
 RUN adduser -D -S -h /home/gitlab-runner gitlab-runner
 
 RUN apk add --no-cache \
-        ca-certificates \
-        curl \
-        git \
-        wget \
-        tzdata \
-        openssh-client
+    bash \
+    ca-certificates \
+    git \
+    tzdata \
+    openssh-client
 
 ARG TARGETPLATFORM
 ARG DUMBINIT_VERSION

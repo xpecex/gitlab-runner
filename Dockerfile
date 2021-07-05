@@ -10,7 +10,7 @@ ARG DUMBINIT_VERSION
 WORKDIR /dumb-init-$DUMBINIT_VERSION
 
 RUN wget -q https://github.com/Yelp/dumb-init/archive/refs/tags/v$DUMBINIT_VERSION.zip -O /tmp/dumb-init.zip && \
-    unzip -o /tmp/dumb-init.zip -d / && \
+    unzip -qq -o /tmp/dumb-init.zip -d / && \
     cd /dumb-init-$DUMBINIT_VERSION/ && \
     make
 
