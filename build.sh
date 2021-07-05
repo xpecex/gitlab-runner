@@ -106,6 +106,7 @@ for RELEASE in "${RELEASES[@]}"; do
     # Build using BUILDX
     # ADD TAG LATEST IF $RELEASE = $LATEST_RELEASE
     if [ "$RELEASE" = "$LATEST_RELEASE" ]; then
+        # Ubuntu
         docker buildx build \
         --push \
         --progress auto \
@@ -115,7 +116,20 @@ for RELEASE in "${RELEASES[@]}"; do
         -t "${IMAGE_NAME}:${IMAGE_VER:-$RELEASE}" \
         -t "${IMAGE_NAME}:latest" \
         .
+
+        # Alpine
+        docker buildx build \
+        -f Dockerfile.alpine \
+        --push \
+        --progress auto \
+        --build-arg DUMBINIT_VERSION="$DUMBINIT_VERSION" \
+        --cache-from "${IMAGE_NAME}:${IMAGE_VER:-$RELEASE}" \
+        --platform "$(echo ${ARCHS[@]} | sed 's/ /,/g')" \
+        -t "${IMAGE_NAME}:alpine-${IMAGE_VER:-$RELEASE}" \
+        -t "${IMAGE_NAME}:alpine-latest" \
+        .
     else
+        # Ubuntu
         docker buildx build \
         --push \
         --progress auto \
@@ -123,6 +137,17 @@ for RELEASE in "${RELEASES[@]}"; do
         --cache-from "${IMAGE_NAME}:${IMAGE_VER:-$RELEASE}" \
         --platform "$(echo ${ARCHS[@]} | sed 's/ /,/g')" \
         -t "${IMAGE_NAME}:${IMAGE_VER:-$RELEASE}" \
+        .
+
+        # Alpine
+        docker buildx build \
+        -f Dockerfile.alpine \
+        --push \
+        --progress auto \
+        --build-arg DUMBINIT_VERSION="$DUMBINIT_VERSION" \
+        --cache-from "${IMAGE_NAME}:${IMAGE_VER:-$RELEASE}" \
+        --platform "$(echo ${ARCHS[@]} | sed 's/ /,/g')" \
+        -t "${IMAGE_NAME}:alpine-${IMAGE_VER:-$RELEASE}" \
         .
     fi
 
